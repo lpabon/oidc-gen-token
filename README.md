@@ -17,8 +17,8 @@ Here is a sample usage:
 ```
 $ oidc-gen-token --client-id=<...> \
     --client-secret=<...> \
-	--issuer=https://accounts.google.com \
-	--save-token
+    --issuer=https://accounts.google.com \
+    --save-token
 ```
 
 # Provider
