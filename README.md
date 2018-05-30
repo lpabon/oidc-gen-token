@@ -10,6 +10,18 @@ This is program is heavily based on the examples from [go-oidc](https://github.c
 go install github.com/lpabon/oidc-gen-token
 ```
 
+# Usage
+
+Here is a sample usage:
+
+```
+$ oidc-gen-token --client-id=<...> \
+    --client-secret=<...> \
+	--issuer=https://accounts.google.com \
+	--save-token
+```
+
+# Provider
 You will also need to setup an OpenID Connect provider. Here are a few examples:
 
 ## Google
