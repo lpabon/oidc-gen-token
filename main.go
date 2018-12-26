@@ -153,6 +153,7 @@ pre {
 		`))
 		w.Write([]byte("<body><h1>Token</h1><br />"))
 		w.Write([]byte(fmt.Sprintf("<pre>%s</pre>", rawIDToken)))
+		w.Write([]byte("<br /><a href=\"/\">Get another token</a>"))
 		w.Write([]byte("</body></head>"))
 
 		if cfg.daemon {
