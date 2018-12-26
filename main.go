@@ -40,6 +40,7 @@ type cliConfig struct {
 	issuer       string
 	port         string
 	saveToken    bool
+	daemon       bool
 	tokenFile    string
 }
 
@@ -68,6 +69,7 @@ func init() {
 	flagset.StringVar(&cfg.port, "port", "5556", "Local port number for oidc-gen-token web url location")
 	flagset.BoolVar(&cfg.saveToken, "save-token", false, "Save the token to a file. Default is not to save")
 	flagset.StringVar(&cfg.tokenFile, "token-file", cfg.tokenFile, "Name of the file to save token")
+	flagset.BoolVar(&cfg.daemon, "daemon", false, "Run continously. Cannot be used with save-token")
 	flagset.Parse(os.Args[1:])
 
 	if clientID := os.Getenv("OIDC_CLIENT_ID"); len(clientID) != 0 {
@@ -89,6 +91,9 @@ func main() {
 		os.Exit(1)
 	} else if len(cfg.clientSecret) == 0 {
 		fmt.Println("Must provide a client secret")
+		os.Exit(1)
+	} else if cfg.daemon && cfg.saveToken {
+		fmt.Println("Cannot set both daemon and saveToken")
 		os.Exit(1)
 	}
 
@@ -135,8 +140,24 @@ func main() {
 			http.Error(w, "Failed to verify ID Token: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
-		w.Write([]byte(fmt.Sprintln("Token:")))
-		w.Write([]byte(rawIDToken))
+		w.Write([]byte(`<html><head><style>
+pre {
+ overflow-x: auto; /* Use horizontal scroller if needed; for Firefox 2, not needed in Firefox 3 */
+ white-space: pre-wrap; /* css-3 */
+ white-space: -moz-pre-wrap !important; /* Mozilla, since 1999 */
+ white-space: -pre-wrap; /* Opera 4-6 */
+ white-space: -o-pre-wrap; /* Opera 7 */
+ /* width: 99%; */
+ word-wrap: break-word; /* Internet Explorer 5.5+ */
+}</style></head>
+		`))
+		w.Write([]byte("<body><h1>Token</h1><br />"))
+		w.Write([]byte(fmt.Sprintf("<pre>%s</pre>", rawIDToken)))
+		w.Write([]byte("</body></head>"))
+
+		if cfg.daemon {
+			return
+		}
 
 		if cfg.saveToken {
 			if err = os.MkdirAll(path.Dir(cfg.tokenFile), 0700); err != nil {
@@ -153,13 +174,14 @@ func main() {
 			f.Write([]byte(rawIDToken))
 			fmt.Printf("Token saved on to %s\n", cfg.tokenFile)
 			f.Close()
+
+			go func() {
+				time.Sleep(time.Second)
+				os.Exit(0)
+			}()
 		}
 
 		fmt.Println("Done")
-		go func() {
-			time.Sleep(time.Second)
-			os.Exit(0)
-		}()
 	})
 
 	log.Printf("listening on http://127.0.0.1:%s/", cfg.port)
