@@ -18,6 +18,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log"
@@ -28,9 +29,8 @@ import (
 	"path"
 	"time"
 
-	oidc "github.com/coreos/go-oidc"
+	oidc "github.com/coreos/go-oidc/v3/oidc"
 
-	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 )
 
@@ -121,6 +121,10 @@ func main() {
 
 	http.HandleFunc("/auth/callback", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Query().Get("state") != state {
+			fmt.Printf("my state[%v] != returned state[%v]. URL: %v\n",
+				state,
+				r.URL.Query().Get("state"), r.URL)
+
 			http.Error(w, "state did not match", http.StatusBadRequest)
 			return
 		}
