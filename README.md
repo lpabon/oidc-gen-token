@@ -7,7 +7,7 @@ This is program is heavily based on the examples from [go-oidc](https://github.c
 # Installation
 
 ```
-go get github.com/lpabon/oidc-gen-token
+go install github.com/lpabon/oidc-gen-token
 ```
 
 # Usage
